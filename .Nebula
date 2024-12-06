@@ -1,0 +1,409 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+function isNumber(str)
+    return tonumber(str) ~= nil or str == 'inf'
+end
+
+local tspeed = 0.003
+local hb = RunService.Heartbeat
+local tpwalking = false
+local speedEnabled = false
+local player = game:GetService("Players")
+local lplr = player.LocalPlayer
+local chr = lplr.Character or lplr.CharacterAdded:Wait()
+local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+
+
+local function handleMovement()
+    while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+        if hum.MoveDirection.Magnitude > 0 and speedEnabled then
+            if tspeed and isNumber(tspeed) then
+                chr:TranslateBy(hum.MoveDirection * tonumber(tspeed))
+            else
+                chr:TranslateBy(hum.MoveDirection)
+            end
+        end
+    end
+end
+
+
+local function createButton(parent, text, position)
+    local button = Instance.new("TextButton")
+    button.Parent = parent
+    button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    button.BorderSizePixel = 0
+    button.TextSize = 11
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Size = UDim2.new(0, 127, 0, 31)
+    button.Position = position
+    button.Text = text
+
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.Parent = button
+
+    return button
+end
+
+
+local MainScreen = Instance.new("ScreenGui")
+MainScreen.Name = "MainScreen"
+MainScreen.Parent = lplr:WaitForChild("PlayerGui")
+MainScreen.ResetOnSpawn = false
+
+local MainFrameChe = Instance.new("Frame")
+MainFrameChe.Parent = MainScreen
+MainFrameChe.Position = UDim2.new(0.322, 0, 0.122, 0)
+MainFrameChe.Size = UDim2.new(0, 721, 0, 579)
+MainFrameChe.BackgroundTransparency = 0.2
+MainFrameChe.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+
+local UICorner = Instance.new("UICorner")
+UICorner.Parent = MainFrameChe
+
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
+
+MainFrameChe.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrameChe.Position
+    end
+end)
+
+MainFrameChe.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+        local delta = input.Position - dragStart
+        MainFrameChe.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local TextMainNebula = Instance.new("TextLabel")
+TextMainNebula.BackgroundTransparency = 1
+TextMainNebula.Parent = MainFrameChe
+TextMainNebula.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextMainNebula.TextSize = 13
+TextMainNebula.Position = UDim2.new(0.01, 0, 0.01, 0)
+TextMainNebula.Size = UDim2.new(0, 111, 0, 40)
+TextMainNebula.BorderSizePixel = 0
+TextMainNebula.Text = "Nebula Hub"
+
+local ButtonsFrame = Instance.new("Frame")
+ButtonsFrame.Parent = MainFrameChe
+ButtonsFrame.Position = UDim2.new(0, 0, 0.079, 0)
+ButtonsFrame.Size = UDim2.new(0, 138, 0, 533)
+ButtonsFrame.BackgroundTransparency = 0.8
+ButtonsFrame.BorderSizePixel = 0
+ButtonsFrame.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+
+local CombatButtonChe = createButton(ButtonsFrame, "Combat", UDim2.new(0.034, 0, 0.039, 0))
+local GraphicButtonChe = createButton(ButtonsFrame, "Graphics", UDim2.new(0.034, 0, 0.745, 0))
+local TeleportsButton = createButton(ButtonsFrame, "Teleports", UDim2.new(0.034, 0, 0.114, 0))
+
+local CombatFrameMenuC = Instance.new("Frame")
+CombatFrameMenuC.Parent = MainFrameChe
+CombatFrameMenuC.Position = UDim2.new(0.191, 0, 0.080, 0)
+CombatFrameMenuC.Size = UDim2.new(0, 583, 0, 529)
+CombatFrameMenuC.BackgroundTransparency = 0.8
+CombatFrameMenuC.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+CombatFrameMenuC.Visible = false
+
+local GraphicFrameChe = Instance.new("Frame")
+GraphicFrameChe.Parent = MainFrameChe
+GraphicFrameChe.Position = UDim2.new(0.191, 0, 0.080, 0)
+GraphicFrameChe.Size = UDim2.new(0, 583, 0, 529)
+GraphicFrameChe.BackgroundTransparency = 0.8
+GraphicFrameChe.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+GraphicFrameChe.Visible = false
+
+local TeleportsFrame = Instance.new("Frame")
+TeleportsFrame.Parent = MainFrameChe
+TeleportsFrame.Position = UDim2.new(0.191, 0, 0.080, 0)
+TeleportsFrame.Size = UDim2.new(0, 583, 0, 529)
+TeleportsFrame.BackgroundTransparency = 0.8
+TeleportsFrame.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+TeleportsFrame.Visible = false
+
+CombatButtonChe.MouseButton1Click:Connect(function()
+    CombatFrameMenuC.Visible = true
+    GraphicFrameChe.Visible = false
+    TeleportsFrame.Visible = false
+end)
+
+GraphicButtonChe.MouseButton1Click:Connect(function()
+    CombatFrameMenuC.Visible = false
+    GraphicFrameChe.Visible = true
+    TeleportsFrame.Visible = false
+end)
+
+TeleportsButton.MouseButton1Click:Connect(function()
+    CombatFrameMenuC.Visible = false
+    GraphicFrameChe.Visible = false
+    TeleportsFrame.Visible = true
+end)
+
+local SpeedButton = createButton(CombatFrameMenuC, "On Speed and no stun", UDim2.new(0.069, 0, 0.274, 0))
+SpeedButton.TextSize = 9
+
+local SpeedTextbox = Instance.new("TextBox")
+SpeedTextbox.TextSize = 9
+SpeedTextbox.TextWrapped = true
+SpeedTextbox.Parent = CombatFrameMenuC
+SpeedTextbox.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+SpeedTextbox.BorderColor3 = Color3.fromRGB(95, 95, 95)
+SpeedTextbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedTextbox.Text = "Set speed"
+SpeedTextbox.Position = UDim2.new(0.05, 0, 0.1, 0)
+SpeedTextbox.Size = UDim2.new(0, 81, 0, 68)
+SpeedTextbox.PlaceholderText = "Enter Speed"
+
+local function handleSpeedAdjustment()
+    local speed = SpeedTextbox.Text
+    if isNumber(speed) then
+        tspeed = tonumber(speed) 
+        SpeedTextbox.Text = "Speed Updated"
+        speedEnabled = true 
+        tpwalking = true
+        handleMovement()
+    else
+        SpeedTextbox.Text = "Invalid Speed, write a number"
+    end
+end
+
+SpeedButton.MouseButton1Click:Connect(handleSpeedAdjustment)
+
+local ResetSpeedButton = createButton(CombatFrameMenuC, "Off speed and no stun", UDim2.new(0.3, 0, 0.1, 0))
+ResetSpeedButton.TextSize = 9
+
+ResetSpeedButton.MouseButton1Click:Connect(function()
+    hum.WalkSpeed = 16
+    SpeedTextbox.Text = "Set Speed"
+    tspeed = 0.003
+    speedEnabled = false
+    tpwalking = false
+end)
+
+localPlayer.CharacterAdded:Connect(function(character)
+    character:WaitForChild("Humanoid")
+    chr = character
+    hum = character:FindFirstChildWhichIsA("Humanoid")
+    hum.Died:Connect(function()
+        tspeed = 0.003 -- Reset speed on death
+        SpeedButton.Enabled = false -- Disable speed button temporarily
+        wait(2) -- Wait for 2 seconds before re-enabling the speed button.
+        SpeedButton.Enabled = true
+        speedEnabled = false
+        tpwalking = false
+    end)
+end)
+
+
+local mainGameLabel = Instance.new("TextLabel")
+mainGameLabel.Parent = TeleportsFrame
+mainGameLabel.Size = UDim2.new(0, 100, 0, 30)
+mainGameLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
+mainGameLabel.Text = "Main Game"
+mainGameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainGameLabel.TextSize = 14
+mainGameLabel.BackgroundTransparency = 1
+
+local teleportButton1 = createButton(TeleportsFrame, "Main Map", UDim2.new(0.05, 0, 0.12, 0))
+local teleportButton2 = createButton(TeleportsFrame, "Mountain", UDim2.new(0.05, 0, 0.20, 0))
+local teleportButton3 = createButton(TeleportsFrame, "Beach", UDim2.new(0.05, 0, 0.28, 0))
+local teleportButton4 = createButton(TeleportsFrame, "Back of map", UDim2.new(0.05, 0, 0.36, 0))
+local teleportButton5 = createButton(TeleportsFrame, "Void", UDim2.new(0.05, 0, 0.67, 0))
+local teleportButton6 = createButton(TeleportsFrame, "Waterfall", UDim2.new(0.05, 0, 0.44, 0))
+local teleportButton7 = createButton(TeleportsFrame, "Atomic ult 4 skill", UDim2.new(0.05, 0, 0.60, 0))
+local teleportButton8 = createButton(TeleportsFrame, "Saitama ult 1 skill", UDim2.new(0.05, 0, 0.52, 0))
+
+teleportButton1.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(201.7895050048828, 440.7559814453125, 4.384121417999268))
+end)
+
+teleportButton2.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(9.990392684936523, 652.521240234375, -341.3338928222656))
+end)
+
+teleportButton3.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(768.5975952148438, 440.6056823730469, -206.09666442871094))
+end)
+
+teleportButton4.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-456.8865051269531, 439.51055908203125, -337.55987548828125))
+end)
+
+teleportButton5.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(4158.921875, 661.3452758789062, -312.87689208984375))
+end)
+
+teleportButton6.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(1177.9302978515625, 816.7724609375, -809.26904296875))
+end)
+
+teleportButton7.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(1058.7796630859375, 133.7587127685547, 23010.96875))
+end)
+
+teleportButton8.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-76.05174255371094, 29.253990173339844, 20379.8984375))
+end)
+
+
+local duelsLabel = Instance.new("TextLabel")
+duelsLabel.Parent = TeleportsFrame
+duelsLabel.Size = UDim2.new(0, 100, 0, 30)
+duelsLabel.Position = UDim2.new(0.7, 0, 0.05, 0)
+duelsLabel.Text = "Duels"
+duelsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+duelsLabel.TextSize = 14
+duelsLabel.BackgroundTransparency = 1
+
+local duelsButton1 = createButton(TeleportsFrame, "Duels Map", UDim2.new(0.7, 0, 0.12, 0))
+local duelsButton2 = createButton(TeleportsFrame, "Void", UDim2.new(0.7, 0, 0.20, 0))
+
+duelsButton1.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(80.59986877441406, 442.25860595703125, -256.9980163574219))
+end)
+
+duelsButton2.MouseButton1Click:Connect(function()
+    localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(4158.921875, 661.3452758789062, -312.87689208984375))
+end)
+
+
+local rtxButton = createButton(GraphicFrameChe, "On RTX Shaders", UDim2.new(0.033, 0, 0.272, 0))
+local rtxEnabled = false
+
+
+local OldSettings = {
+    Brightness = Lighting.Brightness,
+    ColorShiftBottom = Lighting.ColorShift_Bottom,
+    ColorShiftTop = Lighting.ColorShift_Top,
+    OutdoorAmbient = Lighting.OutdoorAmbient,
+    ClockTime = Lighting.ClockTime,
+    FogColor = Lighting.FogColor,
+    FogEnd = Lighting.FogEnd,
+    FogStart = Lighting.FogStart,
+    ExposureCompensation = Lighting.ExposureCompensation,
+    ShadowSoftness = Lighting.ShadowSoftness,
+    Ambient = Lighting.Ambient,
+}
+
+local function applyRTXShaders()
+
+    local Bloom = Instance.new("BloomEffect")
+    Bloom.Name = "Bloom (RTX Shaders)"
+    Bloom.Intensity = 0.1
+    Bloom.Threshold = 0
+    Bloom.Size = 100
+    Bloom.Parent = Lighting
+
+    Lighting.Brightness = 2.14
+    Lighting.ColorShift_Bottom = Color3.fromRGB(11, 0, 20)
+    Lighting.ColorShift_Top = Color3.fromRGB(240, 127, 14)
+    Lighting.OutdoorAmbient = Color3.fromRGB(34, 0, 49)
+    Lighting.ClockTime = 6.7
+    Lighting.FogColor = Color3.fromRGB(94, 76, 106)
+    Lighting.FogEnd = 1000
+    Lighting.FogStart = 0
+    Lighting.ExposureCompensation = 0.24
+    Lighting.ShadowSoftness = 0
+    Lighting.Ambient = Color3.fromRGB(59, 33, 27)
+end
+
+local function removeRTXShaders()
+
+    for _, effect in pairs(Lighting:GetChildren()) do
+        if effect.Name:match("RTX Shaders") then
+            effect:Destroy()
+        end
+    end
+
+    Lighting.Brightness = OldSettings.Brightness
+    Lighting.ColorShift_Bottom = OldSettings.ColorShiftBottom
+    Lighting.ColorShift_Top = OldSettings.ColorShiftTop
+    Lighting.OutdoorAmbient = OldSettings.OutdoorAmbient
+    Lighting.ClockTime = OldSettings.ClockTime
+    Lighting.FogColor = OldSettings.FogColor
+    Lighting.FogEnd = OldSettings.FogEnd
+    Lighting.FogStart = OldSettings.FogStart
+    Lighting.ExposureCompensation = OldSettings.ExposureCompensation
+    Lighting.ShadowSoftness = OldSettings.ShadowSoftness
+    Lighting.Ambient = OldSettings.Ambient
+end
+
+rtxButton.MouseButton1Click:Connect(function()
+    rtxEnabled = not rtxEnabled
+    if rtxEnabled then
+        applyRTXShaders()
+        rtxButton.Text = "Off RTX Shaders"
+    else
+        removeRTXShaders()
+        rtxButton.Text = "On RTX Shaders"
+    end
+end)
+
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.KeyCode == Enum.KeyCode.LeftControl and not gameProcessedEvent then
+        MainFrameChe.Visible = not MainFrameChe.Visible
+    end
+end)
+
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Parent = MainScreen
+toggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+toggleButton.BorderSizePixel = 0
+toggleButton.Size = UDim2.new(0, 56, 0, 57)
+toggleButton.Position = UDim2.new(0.094, 0, 0.42, 0)
+toggleButton.TextSize = 11
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "Close Hub"
+
+local uiCornerToggle = Instance.new("UICorner")
+uiCornerToggle.Parent = toggleButton
+
+
+local function toggleHub()
+    MainFrameChe.Visible = not MainFrameChe.Visible
+    toggleButton.Text = MainFrameChe.Visible and "Open Hub" or "Close Hub"
+end
+
+
+toggleButton.MouseButton1Click:Connect(toggleHub)
+
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
+
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = toggleButton.Position
+    end
+end)
+
+toggleButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+        local delta = input.Position - dragStart
+        toggleButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
